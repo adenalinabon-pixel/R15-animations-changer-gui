@@ -1,0 +1,131 @@
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/UI-Interface/CustomFIeld/main/RayField.lua'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Animation Pack Selector",
+    LoadingTitle = "R15 Animation Override (Fixed Some Stuff I Swear)",
+    LoadingSubtitle = "by robloxplayer37864",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "AnimationPacks",
+        FileName = "SelectedPack"
+    }
+})
+
+local AnimationsTab = Window:CreateTab("Animations", nil)
+
+
+local Packs = {
+    ["Ninja Animation Pack"] = {
+        idle = {656117400},
+        walk = 656121766,
+        run = 656118852,
+        jump = 656117878,
+        fall = 656114359,
+        climb = 656114359,
+        swim = 656119721
+    },
+    ["Toy Animation Pack"] = {
+        idle = {782841498},
+        walk = 782843345,
+        run = 782842708,
+        jump = 782847020,
+        fall = 782846423,
+        climb = 782841120,
+        swim = 782845347
+    },
+    ["Cartoony Animation Pack"] = {
+        idle = {742637544},
+        walk = 742640026,
+        run = 742638842,
+        jump = 742637942,
+        fall = 742636889,
+        climb = 742636889,
+        swim = 742639220
+    },
+    ["Levitation Animation Pack"] = {
+        idle = {616006778},
+        walk = 616013216,
+        run = 616010382,
+        jump = 616008936,
+        fall = 616003713,
+        climb = 616003713,
+        swim = 616011509
+    },
+    ["Mage Animation Pack"] = {
+        idle = {707742142},
+        walk = 707897309,
+        run = 707861613,
+        jump = 707853694,
+        fall = 707826056,
+        climb = 707826056,
+        swim = 707876443
+    }
+}
+
+local player = game.Players.LocalPlayer
+local currentAnimateScript = nil
+
+local function applyPack(pack, packName)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local animate = character:WaitForChild("Animate", 5)
+    
+    if not animate then
+        Rayfield:Notify({
+            Title = "Error",
+            Content = "Animate script not found.",
+            Duration = 5
+        })
+        return
+    end
+
+    if not currentAnimateScript then
+        currentAnimateScript = animate:Clone()
+    end
+
+    animate.idle.Animation1.AnimationId = "rbxassetid://" .. pack.idle[1]
+    animate.idle.Animation2.AnimationId = "rbxassetid://" .. pack.idle[1]
+    animate.walk.WalkAnim.AnimationId = "rbxassetid://" .. pack.walk
+    animate.run.RunAnim.AnimationId = "rbxassetid://" .. pack.run
+    animate.jump.JumpAnim.AnimationId = "rbxassetid://" .. pack.jump
+    animate.fall.FallAnim.AnimationId = "rbxassetid://" .. pack.fall
+    
+    -- Climb and Swim logic
+    animate.climb.ClimbAnim.AnimationId = "rbxassetid://" .. pack.climb
+    if animate:FindFirstChild("swim") then
+        animate.swim.SwimAnim.AnimationId = "rbxassetid://" .. pack.swim
+    end
+
+    animate.Disabled = true
+    task.wait()
+    animate.Disabled = false
+    
+    Rayfield:Notify({
+        Title = "Success",
+        Content = packName .. " applied!",
+        Duration = 4
+    })
+end
+
+for packName, pack in pairs(Packs) do
+    AnimationsTab:CreateButton({
+        Name = packName,
+        Callback = function()
+            applyPack(pack, packName)
+        end
+    })
+end
+
+player.CharacterAdded:Connect(function(newChar)
+    task.wait(1)
+    local animate = newChar:FindFirstChild("Animate")
+    if animate and currentAnimateScript then
+        animate:Destroy()
+        currentAnimateScript:Clone().Parent = newChar
+    end
+end)
+
+Rayfield:Notify({
+    Title = "Loaded",
+    Content = "NOTE: this script may not work all the time also ignore the callback errors it works fine.",
+    Duration = 6
+})
